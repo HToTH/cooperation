@@ -172,6 +172,191 @@ http://127.0.0.1:5173
   app data directory as `cooperation.db`
 - Optional CLI-based agent modes require the matching local CLI to be installed
 
+## Packaging
+
+The desktop build is a single packaged application:
+
+- the frontend is built by Vite
+- the desktop shell is built by Tauri
+- the Rust backend is linked into the desktop app and auto-starts on launch
+- the desktop app allocates a localhost port dynamically, so it does not depend on a fixed `8080`
+
+### What Gets Packaged
+
+- `frontend/dist/`: built frontend assets
+- `frontend/src-tauri/`: Tauri desktop shell
+- `backend/crates/agentflow-server`: embedded backend server
+
+The packaged desktop app does not require manually starting `frontend` and `backend`
+as separate processes.
+
+### Build Prerequisites
+
+- Node.js and npm
+- Rust toolchain
+- platform-native build tools
+
+Platform-specific requirements:
+
+- macOS: Xcode Command Line Tools
+- Windows: Microsoft C++ Build Tools and WebView2 runtime
+- Linux: GTK/WebKitGTK development packages required by Tauri
+
+Optional runtime dependencies:
+
+- `claude`
+- `gemini`
+- `codex`
+
+These are only required if you want packaged builds to use the CLI-native agent
+modes. Raw API-based modes only require the corresponding API keys.
+
+### Install Dependencies
+
+```bash
+cd frontend
+npm install
+```
+
+### Verify Before Packaging
+
+Run these checks first:
+
+```bash
+cd backend
+cargo test
+```
+
+```bash
+cd frontend
+npm run build
+```
+
+```bash
+cd frontend/src-tauri
+cargo check
+```
+
+### Desktop Development Build
+
+Use this when you want a desktop window with hot-reload:
+
+```bash
+cd frontend
+npm run tauri:dev
+```
+
+This starts:
+
+- the Vite dev server
+- the Tauri desktop shell
+- the embedded backend
+
+### Debug Package Build
+
+Use this when you want a packaged app quickly for local testing:
+
+```bash
+cd frontend
+npm run tauri:build -- --debug
+```
+
+Typical debug outputs:
+
+- macOS app bundle: `frontend/src-tauri/target/debug/bundle/macos/cooperation.app`
+- macOS disk image: `frontend/src-tauri/target/debug/bundle/dmg/cooperation_0.1.0_x64.dmg`
+- Windows executable: `frontend/src-tauri/target/debug/cooperation-desktop.exe`
+- Windows installer artifacts: `frontend/src-tauri/target/debug/bundle/`
+
+### Release Package Build
+
+Use this for actual distribution:
+
+```bash
+cd frontend
+npm run tauri:build
+```
+
+Typical release outputs:
+
+- macOS app bundle: `frontend/src-tauri/target/release/bundle/macos/cooperation.app`
+- macOS disk image: `frontend/src-tauri/target/release/bundle/dmg/`
+- Windows executable: `frontend/src-tauri/target/release/cooperation-desktop.exe`
+- Windows installer artifacts: `frontend/src-tauri/target/release/bundle/`
+
+### Packaging on macOS
+
+```bash
+cd frontend
+npm install
+npm run tauri:build
+```
+
+Expected artifacts:
+
+- `.app`
+- `.dmg`
+
+### Packaging on Windows
+
+Build on Windows if you want native Windows artifacts:
+
+```powershell
+cd frontend
+npm install
+npm run tauri:build
+```
+
+Expected artifacts:
+
+- `cooperation-desktop.exe`
+- Windows bundle output under `frontend/src-tauri/target/release/bundle/`
+
+If you specifically need a Windows installer for distribution, build on Windows
+instead of trying to produce it from macOS.
+
+### Packaging on Linux
+
+```bash
+cd frontend
+npm install
+npm run tauri:build
+```
+
+The exact installer formats depend on the Linux packaging toolchain available on
+the build machine.
+
+### Important Runtime Notes
+
+- The packaged desktop app stores its database in the OS app data directory as
+  `cooperation.db`
+- The embedded backend chooses an available localhost port automatically
+- Browser mode and desktop mode are separate:
+  browser mode defaults to `127.0.0.1:8080`
+  desktop mode injects a dynamic runtime endpoint into the frontend
+- CLI-native agent modes still depend on the target machine having the
+  corresponding CLI installed and authenticated
+
+### Clean Rebuild
+
+If packaging behaves unexpectedly, rebuild from a clean state:
+
+```bash
+cd frontend
+rm -rf dist
+rm -rf src-tauri/target
+npm install
+npm run tauri:build
+```
+
+### Current Verified Packaging Result
+
+Verified in this workspace on macOS:
+
+- `npm run tauri:build -- --debug`
+- generated `cooperation.app`
+- generated `.dmg`
+
 ## Additional Docs
 
 - macOS setup and validation: [README-macos.md](./README-macos.md)
