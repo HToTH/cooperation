@@ -1,0 +1,15 @@
+[package]
+name = "cooperation-desktop"
+version = "0.1.0"
+description = "cooperation desktop application"
+edition = "2021"
+default-run = "cooperation-desktop"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+anyhow = "1"
+tauri = { version = "2", features = [] }
+tokio = { version = "1", features = ["net"] }
+agentflow-server = { path = "../../backend/crates/agentflow-server" }

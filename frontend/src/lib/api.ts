@@ -1,6 +1,5 @@
 import type { WorkflowGraph } from './types'
-
-const API_BASE = 'http://localhost:8080'
+import { API_BASE } from './runtime'
 
 export interface WorkflowSummary {
   id: string

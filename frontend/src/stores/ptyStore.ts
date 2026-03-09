@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { API_BASE } from '../lib/runtime'
 
 export interface PtySession {
   sessionId: string
@@ -12,8 +13,6 @@ interface PtyState {
   closeSession: (agentId: string) => Promise<void>
   getSession: (agentId: string) => PtySession | undefined
 }
-
-const API_BASE = 'http://localhost:8080'
 
 /** Deduplicates concurrent createSession calls for the same agentId */
 const inFlight = new Map<string, Promise<PtySession>>()

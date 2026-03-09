@@ -124,8 +124,20 @@ The result is a platform for orchestrating AI teams, not just calling a model.
 
 - `frontend/`: React + Vite application
 - `backend/`: Rust services for APIs, orchestration, memory, and WebSocket events
+- `frontend/src-tauri/`: Tauri desktop shell that embeds and auto-starts the backend
 
 ## Quick Start
+
+### Desktop App (Tauri)
+
+```bash
+cd frontend
+npm install
+npm run tauri:dev
+```
+
+This launches the Vite frontend in a Tauri desktop window and auto-starts the
+embedded backend on an automatically assigned localhost port.
 
 ### Backend
 
@@ -154,8 +166,10 @@ http://127.0.0.1:5173
 
 ## Platform Notes
 
-- The frontend expects the backend at `http://localhost:8080`
-- WebSocket events are served from `ws://localhost:8080/ws`
+- The browser frontend expects the backend at `http://127.0.0.1:8080`
+- WebSocket events are served from `ws://127.0.0.1:8080/ws`
+- The Tauri desktop app auto-starts the backend on an automatically assigned localhost port and stores its database in the
+  app data directory as `cooperation.db`
 - Optional CLI-based agent modes require the matching local CLI to be installed
 
 ## Additional Docs

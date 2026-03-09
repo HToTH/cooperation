@@ -9,3 +9,5 @@ backend/C*agentflow.log
 
 frontend/node_modules/
 frontend/dist/
+frontend/src-tauri/target/
+frontend/src-tauri/gen/

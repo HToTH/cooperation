@@ -10,8 +10,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Terminal } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
 import '@xterm/xterm/css/xterm.css'
-
-const WS_BASE = 'ws://localhost:8080'
+import { WS_BASE } from '../../lib/runtime'
 
 interface Props {
   sessionId: string

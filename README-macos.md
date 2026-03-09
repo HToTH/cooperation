@@ -49,10 +49,10 @@ cargo run -p agentflow-server
 
 ## Frontend
 
-The frontend expects the backend at:
+The frontend defaults to:
 
-- `http://localhost:8080`
-- `ws://localhost:8080/ws`
+- `http://127.0.0.1:8080`
+- `ws://127.0.0.1:8080/ws`
 
 Start the frontend in a second terminal:
 
@@ -68,6 +68,20 @@ Open:
 http://127.0.0.1:5173
 ```
 
+## Desktop App (Tauri)
+
+The Tauri desktop app starts the frontend and backend together. The embedded
+backend listens on an automatically assigned localhost port and stores its database in the app data
+directory as `cooperation.db`.
+
+Start it with:
+
+```bash
+cd frontend
+npm install
+npm run tauri:dev
+```
+
 ## Build Checks
 
 Run these from the project directories:
@@ -80,6 +94,11 @@ cargo test
 ```bash
 cd frontend
 npm run build
+```
+
+```bash
+cd frontend/src-tauri
+cargo check
 ```
 
 ## Quick Smoke Test
@@ -109,9 +128,8 @@ installed for the current platform.
 
 ### Frontend cannot reach the backend
 
-Check that the backend is running on port `8080`. The frontend currently uses
-hard-coded backend URLs in source, so changing the backend port requires code
-changes.
+Check that the backend is running on port `8080`. If you changed the backend
+address, set `VITE_API_BASE` and `VITE_WS_BASE` before starting the frontend.
 
 ### Agent mode fails to start
 

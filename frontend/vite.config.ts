@@ -5,9 +5,16 @@ function normalizeId(id: string) {
   return id.replaceAll('\\', '/')
 }
 
+const tauriHost = process.env.TAURI_DEV_HOST
+
 export default defineConfig({
+  clearScreen: false,
   plugins: [react()],
+  envPrefix: ['VITE_', 'TAURI_ENV_*'],
   build: {
+    target: process.env.TAURI_ENV_PLATFORM === 'windows' ? 'chrome105' : 'safari13',
+    minify: !process.env.TAURI_ENV_DEBUG ? 'esbuild' : false,
+    sourcemap: !!process.env.TAURI_ENV_DEBUG,
     rollupOptions: {
       output: {
         manualChunks(id) {
@@ -32,8 +39,20 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    strictPort: true,
+    host: tauriHost || false,
+    hmr: tauriHost
+      ? {
+          protocol: 'ws',
+          host: tauriHost,
+          port: 1421,
+        }
+      : undefined,
+    watch: {
+      ignored: ['**/src-tauri/**'],
+    },
     proxy: {
-      '/api': 'http://localhost:8080',
+      '/api': 'http://127.0.0.1:8080',
     },
   },
 })

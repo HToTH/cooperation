@@ -1,4 +1,5 @@
 import type { WsCommand, WsEvent } from './types'
+import { WS_BASE } from './runtime'
 
 type EventHandler = (event: WsEvent) => void
 
@@ -105,4 +106,4 @@ class WebSocketClient {
   }
 }
 
-export const wsClient = new WebSocketClient('ws://localhost:8080/ws')
+export const wsClient = new WebSocketClient(`${WS_BASE}/ws`)
