@@ -7,6 +7,8 @@ Instead of treating one model or one CLI as "the agent", cooperation lets you
 assign different roles to different agents, connect them into a workflow, and
 coordinate them through a shared chat surface.
 
+![cooperation example](example.png)
+
 ## Why This Project Exists
 
 The agent ecosystem moves too fast.
