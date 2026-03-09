@@ -77,6 +77,7 @@ impl ClaudeCodeRunner {
             "--max-turns".to_string(),
             self.max_turns.to_string(),
         ];
+        append_claude_bypass_permission_args(&mut args);
 
         if let Some(handle) = session_handle {
             args.push("--resume".to_string());
@@ -158,6 +159,7 @@ impl ClaudeCodeRunner {
             "--max-turns".to_string(),
             self.max_turns.to_string(),
         ];
+        append_claude_bypass_permission_args(&mut args);
 
         if let Some(sys) = system_prompt {
             args.push("--system-prompt".to_string());
@@ -293,6 +295,20 @@ fn parse_claude_code_stream(raw: &str) -> Result<NativeAgentResult> {
     parse_claude_code_output(raw, None)
 }
 
+fn append_claude_bypass_permission_args(args: &mut Vec<String>) {
+    let has_permission_override = args.iter().any(|arg| {
+        arg == "--permission-mode"
+            || arg == "--dangerously-skip-permissions"
+            || arg == "--allow-dangerously-skip-permissions"
+    });
+    if has_permission_override {
+        return;
+    }
+
+    args.push("--permission-mode".to_string());
+    args.push("bypassPermissions".to_string());
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -317,5 +333,15 @@ mod tests {
         let result = parse_claude_code_output(output, None).unwrap();
         assert_eq!(result.output, output);
         assert!(result.structured.get("result").is_some());
+    }
+
+    #[test]
+    fn test_append_claude_bypass_permission_args() {
+        let mut args = vec!["--print".to_string()];
+        append_claude_bypass_permission_args(&mut args);
+
+        assert!(args
+            .windows(2)
+            .any(|pair| { pair[0] == "--permission-mode" && pair[1] == "bypassPermissions" }));
     }
 }

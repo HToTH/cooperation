@@ -38,6 +38,7 @@ impl GeminiCliRunner {
             "--output-format".to_string(),
             "stream-json".to_string(),
         ];
+        append_gemini_bypass_permission_args(&mut args);
         if let Some(model) = &self.model {
             args.push("--model".to_string());
             args.push(model.clone());
@@ -77,6 +78,18 @@ impl GeminiCliRunner {
 
         Ok(parsed)
     }
+}
+
+fn append_gemini_bypass_permission_args(args: &mut Vec<String>) {
+    let has_permission_override = args
+        .iter()
+        .any(|arg| arg == "--approval-mode" || arg == "--yolo" || arg == "-y");
+    if has_permission_override {
+        return;
+    }
+
+    args.push("--approval-mode".to_string());
+    args.push("yolo".to_string());
 }
 
 fn parse_gemini_output(raw: &str, fallback_session: Option<&str>) -> Result<NativeAgentResult> {
@@ -150,5 +163,15 @@ mod tests {
     fn creates_runner() {
         let runner = GeminiCliRunner::new(Some("gemini-2.0-flash".to_string()));
         assert_eq!(runner.model.as_deref(), Some("gemini-2.0-flash"));
+    }
+
+    #[test]
+    fn appends_yolo_approval_mode_by_default() {
+        let mut args = vec!["--prompt".to_string(), "hello".to_string()];
+        append_gemini_bypass_permission_args(&mut args);
+
+        assert!(args
+            .windows(2)
+            .any(|pair| { pair[0] == "--approval-mode" && pair[1] == "yolo" }));
     }
 }

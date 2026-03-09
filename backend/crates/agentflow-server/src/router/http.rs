@@ -1826,6 +1826,43 @@ mod tests {
         assert!(is_terminal_group_reply("OK"));
         assert!(!is_terminal_group_reply("继续跟进"));
     }
+
+    #[test]
+    fn ensure_bypass_permission_args_adds_defaults_for_supported_ptys() {
+        assert_eq!(
+            ensure_bypass_permission_args("claude", &[]),
+            vec!["--permission-mode", "bypassPermissions"]
+        );
+        assert_eq!(
+            ensure_bypass_permission_args("gemini", &[]),
+            vec!["--approval-mode", "yolo"]
+        );
+        assert_eq!(
+            ensure_bypass_permission_args("codex", &[]),
+            vec!["--dangerously-bypass-approvals-and-sandbox"]
+        );
+    }
+
+    #[test]
+    fn ensure_bypass_permission_args_preserves_explicit_overrides() {
+        let claude = ensure_bypass_permission_args(
+            "claude",
+            &["--dangerously-skip-permissions".to_string()],
+        );
+        assert_eq!(claude, vec!["--dangerously-skip-permissions"]);
+
+        let gemini = ensure_bypass_permission_args(
+            "gemini",
+            &["--approval-mode".to_string(), "plan".to_string()],
+        );
+        assert_eq!(gemini, vec!["--approval-mode", "plan"]);
+
+        let codex = ensure_bypass_permission_args(
+            "codex",
+            &["--sandbox".to_string(), "workspace-write".to_string()],
+        );
+        assert_eq!(codex, vec!["--sandbox", "workspace-write"]);
+    }
 }
 
 fn native_kind_key(kind: &AgentKind) -> &'static str {
@@ -1858,12 +1895,70 @@ fn default_rows() -> u16 {
     50
 }
 
+fn ensure_bypass_permission_args(program: &str, args: &[String]) -> Vec<String> {
+    let normalized = program.trim().to_ascii_lowercase();
+    let mut merged = args.to_vec();
+
+    let prefix = match normalized.as_str() {
+        "claude" => {
+            let has_override = merged.iter().any(|arg| {
+                arg == "--permission-mode"
+                    || arg == "--dangerously-skip-permissions"
+                    || arg == "--allow-dangerously-skip-permissions"
+            });
+            if has_override {
+                Vec::new()
+            } else {
+                vec![
+                    "--permission-mode".to_string(),
+                    "bypassPermissions".to_string(),
+                ]
+            }
+        }
+        "gemini" => {
+            let has_override = merged
+                .iter()
+                .any(|arg| arg == "--approval-mode" || arg == "--yolo" || arg == "-y");
+            if has_override {
+                Vec::new()
+            } else {
+                vec!["--approval-mode".to_string(), "yolo".to_string()]
+            }
+        }
+        "codex" => {
+            let has_override = merged.iter().any(|arg| {
+                arg == "--dangerously-bypass-approvals-and-sandbox"
+                    || arg == "--full-auto"
+                    || arg == "--ask-for-approval"
+                    || arg == "-a"
+                    || arg == "--sandbox"
+                    || arg == "-s"
+            });
+            if has_override {
+                Vec::new()
+            } else {
+                vec!["--dangerously-bypass-approvals-and-sandbox".to_string()]
+            }
+        }
+        _ => Vec::new(),
+    };
+
+    if prefix.is_empty() {
+        return merged;
+    }
+
+    let mut output = prefix;
+    output.append(&mut merged);
+    output
+}
+
 async fn create_pty_session(
     State(state): State<Arc<AppState>>,
     Json(req): Json<CreatePtyRequest>,
 ) -> Result<Json<Value>, (StatusCode, String)> {
     let session_id = uuid::Uuid::new_v4().to_string();
-    let args: Vec<&str> = req.args.iter().map(String::as_str).collect();
+    let merged_args = ensure_bypass_permission_args(&req.program, &req.args);
+    let args: Vec<&str> = merged_args.iter().map(String::as_str).collect();
 
     let handle = pty_broker::spawn(
         session_id.clone(),

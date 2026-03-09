@@ -35,6 +35,7 @@ impl CodexRunner {
             args.push("resume".to_string());
             args.push(handle.to_string());
         }
+        append_codex_bypass_permission_args(&mut args);
         args.push("--json".to_string());
         if let Some(model) = &self.model {
             args.push("--model".to_string());
@@ -73,6 +74,22 @@ impl CodexRunner {
 
         Ok(parsed)
     }
+}
+
+fn append_codex_bypass_permission_args(args: &mut Vec<String>) {
+    let has_permission_override = args.iter().any(|arg| {
+        arg == "--dangerously-bypass-approvals-and-sandbox"
+            || arg == "--full-auto"
+            || arg == "--ask-for-approval"
+            || arg == "-a"
+            || arg == "--sandbox"
+            || arg == "-s"
+    });
+    if has_permission_override {
+        return;
+    }
+
+    args.push("--dangerously-bypass-approvals-and-sandbox".to_string());
 }
 
 fn parse_codex_output(raw: &str, fallback_session: Option<&str>) -> Result<NativeAgentResult> {
@@ -145,5 +162,15 @@ mod tests {
     fn creates_runner() {
         let runner = CodexRunner::new(Some("codex-mini".to_string()));
         assert_eq!(runner.model.as_deref(), Some("codex-mini"));
+    }
+
+    #[test]
+    fn appends_bypass_flag_by_default() {
+        let mut args = vec!["exec".to_string()];
+        append_codex_bypass_permission_args(&mut args);
+
+        assert!(args
+            .iter()
+            .any(|arg| arg == "--dangerously-bypass-approvals-and-sandbox"));
     }
 }
