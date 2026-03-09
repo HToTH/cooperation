@@ -1,0 +1,30 @@
+[package]
+name = "agentflow-server"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "agentflow-server"
+path = "src/main.rs"
+
+[dependencies]
+agentflow-core = { path = "../agentflow-core" }
+agentflow-memory = { path = "../agentflow-memory" }
+agentflow-agents = { path = "../agentflow-agents" }
+tokio = { workspace = true }
+axum = { workspace = true }
+tower-http = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+dashmap = { workspace = true }
+sqlx = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+futures = { workspace = true }
+async-trait = "0.1"
+base64 = "0.22"
+lopdf = "0.35"

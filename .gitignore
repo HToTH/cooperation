@@ -1,0 +1,11 @@
+.DS_Store
+.vite/
+
+backend/target/
+backend/.env
+backend/agentflow.db
+backend/*.log
+backend/C*agentflow.log
+
+frontend/node_modules/
+frontend/dist/

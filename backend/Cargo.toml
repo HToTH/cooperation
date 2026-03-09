@@ -1,0 +1,26 @@
+[workspace]
+members = [
+    "crates/agentflow-core",
+    "crates/agentflow-memory",
+    "crates/agentflow-agents",
+    "crates/agentflow-server",
+]
+resolver = "2"
+
+[workspace.dependencies]
+tokio = { version = "1", features = ["full"] }
+axum = { version = "0.7", features = ["ws", "macros"] }
+tower-http = { version = "0.5", features = ["cors", "trace"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+reqwest = { version = "0.12", features = ["json", "stream"] }
+uuid = { version = "1", features = ["v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+dashmap = "5"
+sqlx = { version = "0.7", features = ["sqlite", "runtime-tokio", "migrate"] }
+thiserror = "1"
+anyhow = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+futures = "0.3"
+async-trait = "0.1"
